@@ -1,0 +1,60 @@
+services:
+  couchdb:
+    image: couchdb:3
+    container_name: obsidian-db
+    restart: unless-stopped
+    ports:
+      - "5984:5984"
+    environment:
+      COUCHDB_USER: ${COUCHDB_USER:-admin}
+      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD:?Set COUCHDB_PASSWORD in .env}
+    volumes:
+      - /srv/obsidian-livesync/couchdb_data:/opt/couchdb/data
+      - ./couchdb-init.ini:/opt/couchdb/etc/local.d/livesync.ini:ro
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.obsidian-db.entrypoints=websecure"
+      - "traefik.http.routers.obsidian-db.rule=Host(`couchdb.evilcouncil.org`)"
+      - "traefik.http.routers.obsidian-db.tls.certresolver=myresolver"
+      - "traefik.http.services.obsidian-db.loadbalancer.server.port=5984"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "10"
+
+  mcp:
+    image: ghcr.io/es617/obsidian-sync-mcp:latest
+    container_name: obsidian-mcp
+    restart: unless-stopped
+    ports:
+      - "8787:8787"
+    environment:
+      COUCHDB_URL: http://couchdb:5984
+      COUCHDB_USER: ${COUCHDB_USER:-admin}
+      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD:?Set COUCHDB_PASSWORD in .env}
+      COUCHDB_DATABASE: ${COUCHDB_DATABASE:-obsidian}
+      VAULT_NAME: ${VAULT_NAME:-MyVault}
+      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
+      BASE_URL: "https://${FQDN}"
+    depends_on:
+      - couchdb
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.obsidian-mcp.entrypoints=websecure"
+      - "traefik.http.routers.obsidian-mcp.rule=Host(`${FQDN}`)"
+      - "traefik.http.routers.obsidian-mcp.tls.certresolver=myresolver"
+      - "traefik.http.services.obsidian-mcp.loadbalancer.server.port=8787"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "10"
+
+networks:
+  proxy:
+    external: true
