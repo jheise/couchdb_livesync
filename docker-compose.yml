@@ -11,6 +11,8 @@ services:
     volumes:
       - /srv/obsidian-livesync/couchdb_data:/opt/couchdb/data
       - /srv/obsidian-livesync/couchdb-init.ini:/opt/couchdb/etc/local.d/livesync.ini:ro
+    security_opt:
+      - seccomp:unconfined
     networks:
       - proxy
     labels:
