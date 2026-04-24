@@ -10,7 +10,7 @@ services:
       COUCHDB_PASSWORD: ${COUCHDB_PASSWORD:?Set COUCHDB_PASSWORD in .env}
     volumes:
       - /srv/obsidian-livesync/couchdb_data:/opt/couchdb/data
-      - /srv/obsidian-livesync/couchdb-init.ini:/opt/couchdb/etc/local.d/livesync.ini:ro
+      - /srv/obsidian-livesync/couchdb-init.ini:/opt/couchdb/etc/local.d/livesync.ini
     security_opt:
       - seccomp:unconfined
     networks:
