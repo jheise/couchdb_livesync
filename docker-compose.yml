@@ -41,6 +41,9 @@ services:
       VAULT_NAME: ${VAULT_NAME:-MyVault}
       MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
       BASE_URL: "https://${FQDN}"
+      MCP_INSTRUCTIONS_FILE: /config/mcp-instructions.md
+    volumes:
+      - /srv/obsidian-livesync/mcp-instructions.md:/config/mcp-instructions.md:ro
     depends_on:
       - couchdb
     networks:
